@@ -17,6 +17,7 @@ git clone https://github.com/tonible14012002/SmartFarm
 
 * ` cd ./server`
 * `virtualenv env`
+* `.\env\scripts\activate`
 * `python -m pip install -r requirements.txt`
 
 4. Configuration
