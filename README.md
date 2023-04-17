@@ -7,22 +7,67 @@ A smart farming system with the integration of IOT.
 * VIRTUALENV
 
 ## Installations
-1. Get Firebase credential json file for Admin SDK in Firebase console setting.
+### Firebase setup
+1. Go to your firebase console, create new Project.
+2. Create realtime database instance.
+3. Insert data as below
+``` javascript 
+yourDatabaseURL: {
+    himidity: {
+        current: {
+            created_at: "YYYY-MM-DD hh:mm:ss", // replace the date time you want
+            value: "50"
+        },
+        pass: {} // data will be inserted later
+    },
+    light: {}, //Similar to himidity.
+    temperature: {}, // Similar to humidity
 
-2. Clone the repo
+    users: {    // storing user's tokens for cloud message
+        // username: "token" 
+    }
+    log: { // Storing log data
+        // eventName: { // ex: bound
+        //     subEventName: "humidity"
+        //     detail: "___"
+        // } 
+    }
+}
+```
+4. Go to Edit Rules tab, insert lines
+``` javascript
+{
+  "rules": {
+    ".read": true,
+		"$sensor_data": {
+      ".read": true,
+      ".write": "auth.uid === 'my-service-worker'",
+        "pass": {
+            ".indexOn": ["created_at"]
+        }
+    }
+  }
+}
+
+```
+5. Go to Project Settings, in the Service account tab, hit on Button **Generate new private key** to download certificate file.
+
+
+### Setup directory
+
 ``` git
 git clone https://github.com/tonible14012002/SmartFarm
 ```
-3. Install requirements
+1. Install requirements
 
 * ` cd ./server`
 * `virtualenv env`
 * `.\env\scripts\activate`
 * `python -m pip install -r requirements.txt`
 
-4. Configuration
+2. Configuration
 * Create **settings.py** file inside /utils.
-* add these line of code.
+* add these lines of code.
 ``` python 
 AIO_USERNAME = '__yourAdafruitUsername__'
 AIO_KEY = '__yourAdafruitKey__'
