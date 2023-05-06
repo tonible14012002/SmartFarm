@@ -35,3 +35,7 @@ def update_sensor_data(feed_id, data):
 
     db_ref.child('current').set(new_data)
     db_ref.child('pass').push(new_data)
+
+def append_log_data():
+    pass
+
