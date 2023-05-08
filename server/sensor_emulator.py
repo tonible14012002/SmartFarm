@@ -5,7 +5,7 @@ import sys
 
 
 AIO_USERNAME = 'ducanh_24'
-AIO_KEY = 'aio_hlBu30Wb2WD9537ZeF0HRTyvd8hS'
+AIO_KEY = 'aio_gAnS42HQYWutX3SYVaqEEgwJgGKD'
 AIO_FEED_IDs = ['light', 'temperature', 'humidity']
 
 

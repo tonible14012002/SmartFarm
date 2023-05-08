@@ -50,6 +50,8 @@ def initialize_client():
     client.on_subscribe = handle_subscribe
     client.on_disconnect = handle_disconnect
 
+    return client
+
 def start_client():
     client.connect()
     for feed_id in AIO_FEED_IDs:
