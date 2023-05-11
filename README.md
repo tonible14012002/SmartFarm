@@ -1,81 +1,25 @@
 # SMART FARMING
-A smart farming system with the integration of IOT.
+Smart Farming application with the integration of IOT sensors.
 
-## Requirements
-* PYTHON
-* PIP
-* VIRTUALENV
+<img src="documentations/system/overall.png"/>
 
-## Installations
-### Firebase setup
-1. Go to your firebase console, create new Project.
-2. Create realtime database instance.
-3. Insert data as below
-``` javascript 
-yourDatabaseURL: {
-    himidity: {
-        current: {
-            created_at: "YYYY-MM-DD hh:mm:ss", // replace the date time you want
-            value: "50"
-        },
-        pass: {} // data will be inserted later
-    },
-    light: {}, //Similar to himidity.
-    temperature: {}, // Similar to humidity
+> Overall system
 
-    users: {    // storing user's tokens for cloud message
-        // username: "token" 
-    }
-    log: { // Storing log data
-        // eventName: { // ex: bound
-        //     subEventName: "humidity"
-        //     detail: "___"
-        // } 
-    }
-}
-```
-4. Go to Edit Rules tab, insert lines
-``` javascript
-{
-  "rules": {
-    ".read": true,
-		"$sensor_data": {
-      ".read": true,
-      ".write": "auth.uid === 'my-service-worker'",
-        "pass": {
-            ".indexOn": ["created_at"]
-        }
-    }
-  }
-}
+## Project Structure
+* [Mobile Application](/mobile/)
+* [Server-side Script](/server/) 
 
-```
-5. Go to Project Settings, in the Service account tab, hit on Button **Generate new private key** to download certificate file.
+## Features
+* Display Plant evironment status in realtime including: `light` `temperature` `humidity`.
+* Enable user to controll over devices: `Fan` `Water pump` `Light Bulb`.
+* Automatically controll over devices when `auto-mode` is `ON`.
+* Display log for user's activities, environment data overbound.
+* Indicate user when environment data `will overbound`.
 
+## Installation
+Follow the installation guidance for Mobile and server-side.
+* [Server-side Installation guidance](/server/README.md#installation)
+* [Mobile Installation guidance](/mobile/README.md#installation)
 
-### Setup directory
-
-``` git
-git clone https://github.com/tonible14012002/SmartFarm
-```
-1. Install requirements
-
-* ` cd ./server`
-* `virtualenv env`
-* `.\env\scripts\activate`
-* `python -m pip install -r requirements.txt`
-
-2. Configuration
-* Create **settings.py** file inside /utils.
-* add these lines of code.
-``` python 
-AIO_USERNAME = '__yourAdafruitUsername__'
-AIO_KEY = '__yourAdafruitKey__'
-AIO_FEED_IDs = ['light', 'temperature', 'humidity']
-
-# Firebase settings.
-DATABASE_URL = 'https://smart-farm-f00f3-default-rtdb.asia-southeast1.firebasedatabase.app/'
-DATABASE_SERVICE_UID = 'my-service-worker'
-DATABASE_CERTIFICATE_PATH = '__directoryPathToYourCertificationFile__'
-
-```
+## Contribution
+This project is a School excercise and developed by our group's member. Therefore, we are not actively seek for other contributors. However, feel free to share any suggestions or idea that you have and believe it could improve our project by submiting a issue or pull request.
