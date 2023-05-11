@@ -1,83 +1,84 @@
-from flask import Flask, request
+import threading
 from utils import db
-from utils.aio_client import (
-    initialize_client,
+from utils.mqtt_client import (
+    initialize_mqtt_client,
     register_handlers,
-    start_client,
-)
-from utils.settings import (
-    AIO_BUTTON_FEED_IDs,
-    AIO_FEED_IDs
+    start_mqtt_client,
+    set_timer, 
+    is_timeout
 )
 
+from utils.settings import (
+    AIO_BUTTON_FEED_IDs,
+    AIO_FEED_IDs,
+    AIO_CORRESPOND_BUTTON_FEEDs
+)
+
+def int_str_to_bool(str):
+    return bool(int(str))
+
+FIVE_MINUTES = 14000
+
 class LogEvent:
+    """Enumerate for log envent name
+    """
     overbound = 'overbound'
     buttonswitch = 'button'
 
-app = Flask(__name__)
+# Mqtt_instance for talk with adafruit
+mqtt_aio = initialize_mqtt_client()
 
-aio = initialize_client()
+# In memory Button feed state
+buttons = {feed_id: False for feed_id in AIO_BUTTON_FEED_IDs}
 
-# update feed data to firebase
-@register_handlers('on_message', feed_id='light')
-def handle_sensor_data_change(client, payload):
-    db.update_sensor_data('light', payload)
+def request_buttons_State():
+    for feed_id in buttons:
+        mqtt_aio.publish(f'{feed_id}/get', value=None)
 
-@register_handlers('on_message', feed_id='humidity')
-def handle_sensor_data_change(client, payload):
-    db.update_sensor_data('humidity', payload)
+# Update button state
+@register_handlers('on_message', feed_ids=AIO_BUTTON_FEED_IDs)
+def handle_update_auto(_, payload, feed_id):
+    buttons[feed_id]=int_str_to_bool(payload)
+    print('set', buttons[feed_id])
 
-@register_handlers('on_message', feed_id='temperature')
-def handle_sensor_data_change(client, payload):
-    db.update_sensor_data('temperature', payload)
-
-# check bound for logging
-@register_handlers('on_message', feed_id="light")
-def handle_check_bound(client, payload):
+# Check bound for logging
+@register_handlers('on_message', feed_ids=AIO_FEED_IDs)
+def handle_overbound(_, payload, feed_id):
     payload = int(payload)
-    light_threshold = db.get_threshold("light")
+    threshold = db.get_threshold(feed_id)
 
-    if payload < light_threshold:
+    check_is_overbound = lambda data, thres: data < thres 
+    if feed_id == 'temperature':
+        check_is_overbound = lambda data, thres: data > thres
+    is_overbound = check_is_overbound(payload, threshold)
+
+    if is_overbound:
         db.append_log_data(
-            feed_id='light',
-            event='overbound',
+            feed_id=feed_id,
+            event=LogEvent.overbound,
             value=payload
         )
 
-# server views
-@app.route('/button/<feed_id>', methods=['POST'])
-def public_feed(feed_id):
-    if (feed_id) not in AIO_BUTTON_FEED_IDs:
-        return {'status': 'error', 'msg': 'Can only public to button feed'}, 400
-        
-    if not request.is_json:
-        return {'status': 'error', 'msg': 'Request must be json'}, 400
+    if buttons['auto-mode']:
+        if is_timeout():
+            print('is_time out')
+            return
 
-    value = request.json.get('value')
-    if value is None:
-        return {'status': 'error', 'msg': 'Request must include feed value'}, 400
+        print('not timeout')
 
-    try:
-        aio.publish(feed_id, value=value)
-        db.append_log_data(feed_id, event=LogEvent.buttonswitch, value=value)
-    except Exception as e:
-        return {'status': 'error', 'msg': str(e)}, 400
-    return {'status': 'ok', 'data': value}, 200
+        button_id = AIO_CORRESPOND_BUTTON_FEEDs[feed_id]
+        if is_overbound:
+            print('overbound')
+            mqtt_aio.publish(button_id, 1)
+            set_timer(FIVE_MINUTES)
+            return 
 
-
-@app.route('/threshold/<feed_id>', methods=['POST'])
-def set_bound(feed_id):
-    if feed_id not in AIO_FEED_IDs:
-        return {'status':'error', 'msg': 'Set bound only work wiht sensor feed id'}, 400
-    if not request.is_json:
-        return {'status': 'error', 'msg': 'Request must be json'}, 400
-    value = request.json.get('value')
-    try:
-        db.update_threshold(feed_id=feed_id, value=value)
-        return {'status': 'ok', 'data': value}
-    except Exception as e:
-        return {'status': 'error', 'msg': str(e)}, 400
+        mqtt_aio.publish(button_id, 0)
 
 if __name__ == '__main__':
-    start_client()
-    app.run(host='0.0.0.0')
+    start_mqtt_client()
+    import time
+    time.sleep(1)
+    request_buttons_State()
+    while True:
+        pass

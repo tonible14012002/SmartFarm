@@ -18,33 +18,20 @@ firebase_admin.initialize_app(cred, {
 })
 
 get_ref = {
-    'light': db.reference('light/'),
-    'temperature': db.reference('temperature/'),
-    'humidity': db.reference('humidity/'),
-    'log':db.reference('log/')
+    'threshold': db.reference('threshold/'),
+    'log':db.reference('log/'),
+    'token': db.reference('token/')
 }
-
-def update_sensor_data(feed_id, data):
-    db_ref = get_ref[feed_id]
-    current = str(datetime.utcnow())
-
-    new_data = {
-        'created_at': current,
-        'value': data
-    }
-
-    db_ref.child('current').set(new_data)
-    db_ref.child('pass').push(new_data)
 
 def get_threshold(feed_id):
     assert feed_id in AIO_FEED_IDs
-    ref = get_ref[feed_id]
-    return ref.child('threshold').get()
+    ref = get_ref['threshold']
+    return ref.child(feed_id).get()
 
 def update_threshold(feed_id, value):
     assert feed_id in AIO_FEED_IDs
-    ref = get_ref[feed_id]
-    ref.child('threshold').set(value)
+    ref = get_ref['threshold']
+    ref.child(feed_id).set(value)
 
 def append_log_data(feed_id, event, value):
     log_data = {

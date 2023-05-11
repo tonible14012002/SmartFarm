@@ -2,12 +2,11 @@ import time
 import random
 from Adafruit_IO import MQTTClient
 import sys
-
-
-AIO_USERNAME = 'ducanh_24'
-AIO_KEY = 'aio_gAnS42HQYWutX3SYVaqEEgwJgGKD'
-AIO_FEED_IDs = ['light', 'temperature', 'humidity']
-
+from  utils.settings import (
+    AIO_FEED_IDs,
+    AIO_USERNAME,
+    AIO_KEY
+)
 
 def connect(client):
     print("=> Connected to server")
@@ -32,7 +31,7 @@ client.connect()
 client.loop_background()
 
 count = 0
-frequency = 8
+frequency = 10
 
 while(True):
     count+=1
