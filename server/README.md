@@ -30,14 +30,18 @@
 ```javascript
 {
   "rules": {
-    ".read": true,
-		"$sensor_data": {
+    "log": {
       ".read": true,
       ".write": "auth.uid === 'my-service-worker'",
-        "pass": {
-            ".indexOn": ["created_at"]
-        }
-    }
+      "$log_id": {
+        ".indexOn": ["time"],
+          
+			}
+    },
+    "threshold": {
+      ".read": true,
+      ".write": "auth.uid !== 'my-service-worker'"
+		}
   }
 }
 ```
