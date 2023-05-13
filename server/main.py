@@ -30,6 +30,7 @@ def int_str_to_bool(str):
     return bool(int(str))
 
 FIVE_MINUTES = 14000
+PREDICTOR_DURATION = 14000
 
 class LogEvent:
     """Enumerate for log envent name
@@ -64,11 +65,14 @@ def handle_overbound(_, payload, feed_id):
         check_is_overbound = lambda data, thres: data > thres
 
     predictor.append_sample(feed_id, payload)
-    predict_value = predictor.predict(feed_id)
 
-    if check_is_overbound(predict_value, threshold):
-        response = messaging.send(create_notify_message(feed_id, payload))
-        print(response)
+    if not predictor.is_timeout():
+        predict_value = predictor.predict(feed_id)
+
+        if check_is_overbound(predict_value, threshold):
+            predictor.set_timer(PREDICTOR_DURATION)
+            response = messaging.send(create_notify_message(feed_id, payload))
+            print(response)
 
     is_overbound = check_is_overbound(payload, threshold)
     if is_overbound:

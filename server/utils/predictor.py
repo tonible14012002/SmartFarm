@@ -1,3 +1,4 @@
+import threading
 from .settings import AIO_FEED_IDs
 from sklearn.linear_model import LinearRegression
 import numpy as np
@@ -29,3 +30,14 @@ def predict(feed_id):
     model = LinearRegression().fit(X, Y)
     next_index = len(samples)
     return model.predict([[next_index]])[0]
+
+timer = None
+def reset_timer():
+    global timer
+    timer = False
+
+def set_timer(time):
+    threading.Timer(time,reset_timer).start()
+
+def is_timeout():
+    return timer
