@@ -67,7 +67,8 @@ def handle_overbound(_, payload, feed_id):
     predict_value = predictor.predict(feed_id)
 
     if check_is_overbound(predict_value, threshold):
-        messaging.send(create_notify_message(feed_id, payload))
+        response = messaging.send(create_notify_message(feed_id, payload))
+        print(response)
 
     is_overbound = check_is_overbound(payload, threshold)
     if is_overbound:
