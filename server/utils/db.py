@@ -36,7 +36,7 @@ def update_threshold(feed_id, value):
 def append_log_data(feed_id, event, value):
     log_data = {
         'feed': feed_id,
-        'time': str(datetime.utcnow()),
+        'time': datetime.now().timestamp(),
         'event': event,
         'value': value
     }
